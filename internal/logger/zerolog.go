@@ -16,8 +16,6 @@ func NewZerolog() (*zerolog.Logger, error) {
 	now := time.Now().Format("02012006-150405MST")
 	path := fmt.Sprintf("logs/%s.log", now)
 
-	fmt.Println(path)
-
 	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, os.ModePerm)
 	if err != nil {
 		return nil, err
