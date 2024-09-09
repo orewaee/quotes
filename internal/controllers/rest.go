@@ -20,8 +20,11 @@ func NewRestController(addr string, quoteApi api.QuoteApi, logger *zerolog.Logge
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /random", func(writer http.ResponseWriter, request *http.Request) {
+		logger.Debug().Str("path", request.URL.Path)
+
 		quote, err := quoteApi.GetRandomQuote()
 		if err != nil {
+			logger.Error().Err(err).Send()
 			utils.MustWriteError(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
