@@ -3,8 +3,8 @@ package controllers
 import (
 	"context"
 	"github.com/orewaee/quotes/internal/app/api"
-	"github.com/orewaee/quotes/internal/dtos"
-	"github.com/orewaee/quotes/internal/utils"
+	"github.com/orewaee/quotes/internal/handlers"
+	"github.com/orewaee/quotes/internal/middlewares"
 	"github.com/rs/zerolog"
 	"net/http"
 	"time"
@@ -13,29 +13,14 @@ import (
 type RestController struct {
 	server   *http.Server
 	quoteApi api.QuoteApi
-	logger   *zerolog.Logger
+	log      *zerolog.Logger
 }
 
-func NewRestController(addr string, quoteApi api.QuoteApi, logger *zerolog.Logger) *RestController {
+func NewRestController(addr string, quoteApi api.QuoteApi, log *zerolog.Logger) *RestController {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /random", func(writer http.ResponseWriter, request *http.Request) {
-		logger.Debug().Str("path", request.URL.Path)
-
-		quote, err := quoteApi.GetRandomQuote()
-		if err != nil {
-			logger.Error().Err(err).Send()
-			utils.MustWriteError(writer, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		dtoQuote := &dtos.Quote{
-			Text:   quote.Text,
-			Author: quote.Author,
-		}
-
-		utils.MustWriteJson(writer, dtoQuote, http.StatusOK)
-	})
+	randomHandler := handlers.NewRandomHandler(quoteApi, log)
+	mux.Handle("GET /random", middlewares.LogMiddleware(randomHandler, log))
 
 	server := &http.Server{
 		Addr:         addr,
@@ -47,16 +32,16 @@ func NewRestController(addr string, quoteApi api.QuoteApi, logger *zerolog.Logge
 	return &RestController{
 		server:   server,
 		quoteApi: quoteApi,
-		logger:   logger,
+		log:      log,
 	}
 }
 
 func (controller *RestController) Run() error {
-	controller.logger.Info().Msgf("running app at addr %s", controller.server.Addr)
+	controller.log.Info().Msgf("running app at addr %s", controller.server.Addr)
 	return controller.server.ListenAndServe()
 }
 
 func (controller *RestController) Shutdown(ctx context.Context) error {
-	controller.logger.Info().Msg("shutting down the app...")
+	controller.log.Info().Msg("shutting down the app...")
 	return controller.server.Shutdown(ctx)
 }
