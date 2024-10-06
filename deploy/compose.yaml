@@ -1,0 +1,16 @@
+services:
+  quotes:
+    image: orewaee/quotes:latest
+    container_name: quotes
+    restart: unless-stopped
+    command: "--addr=:8081"
+    volumes:
+      - ../quotes:/api/quotes
+      - ../logs:/api/logs
+    ports:
+      - "8082:8081"
+    networks:
+      - quotes
+networks:
+  quotes:
+    driver: bridge
