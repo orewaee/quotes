@@ -11,9 +11,8 @@ RUN go build -o out/main -v cmd/quotes/main.go
 
 FROM alpine
 
-WORKDIR /app
+WORKDIR /api
 
-COPY /quotes /app/quotes
-COPY --from=build /build/out/main /app/main
+COPY --from=build /build/out/main /api/main
 
-CMD ["./main"]
+ENTRYPOINT ["./main"]
