@@ -1,0 +1,12 @@
+services:
+  quotes:
+    image: orewaee/quotes:latest
+    command: "--addr=:8081"
+    volumes:
+      - ../quotes:/api/quotes
+      - ../logs:/api/logs
+    ports:
+      - "8082:8081"
+    deploy:
+      mode: replicated
+      replicas: 4
